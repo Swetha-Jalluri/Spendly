@@ -4,6 +4,65 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+<style>
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: rgba(15, 15, 15, 0.78);
+        padding: 2rem;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+        position: relative;
+        width: min(900px, 100%);
+    }
+
+    .modal-video {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%; /* 16:9 */
+        height: 0;
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-video iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: -2.75rem;
+        right: 0;
+        width: 2.25rem;
+        height: 2.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        color: #fff;
+        border: none;
+        font-size: 1.75rem;
+        line-height: 1;
+        cursor: pointer;
+        border-radius: 50%;
+        transition: background 0.2s;
+    }
+
+    .modal-close:hover { background: rgba(255, 255, 255, 0.15); }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -23,7 +82,7 @@
         </p>
         <div class="hero-actions">
             <a href="{{ url_for('register') }}" class="btn-primary">Create free account</a>
-            <a href="{{ url_for('login') }}" class="btn-ghost">See how it works</a>
+            <a href="#" class="btn-ghost" id="how-it-works-btn">See how it works</a>
         </div>
     </div>
 
@@ -103,4 +162,60 @@
     </div>
 </section>
 
+<div class="modal-overlay" id="video-modal" aria-hidden="true">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-label="How Spendly works">
+        <button class="modal-close" id="video-modal-close" type="button" aria-label="Close video">&times;</button>
+        <div class="modal-video">
+            <iframe id="video-frame"
+                    src=""
+                    title="How Spendly works"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (function () {
+        var trigger = document.getElementById('how-it-works-btn');
+        var modal = document.getElementById('video-modal');
+        var closeBtn = document.getElementById('video-modal-close');
+        var frame = document.getElementById('video-frame');
+        if (!trigger || !modal || !closeBtn || !frame) return;
+
+        // Placeholder YouTube embed — replace the video ID later.
+        var VIDEO_URL = 'https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0&autoplay=1';
+
+        function openModal(event) {
+            event.preventDefault();
+            frame.src = VIDEO_URL;
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+            frame.src = '';            // unloads the video so it stops playing
+            document.body.style.overflow = '';
+        }
+
+        trigger.addEventListener('click', openModal);
+        closeBtn.addEventListener('click', closeModal);
+
+        // Click on the backdrop (but not the modal box) closes it.
+        modal.addEventListener('click', function (event) {
+            if (event.target === modal) closeModal();
+        });
+
+        // Escape key also closes it.
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && modal.classList.contains('open')) closeModal();
+        });
+    })();
+</script>
 {% endblock %}
